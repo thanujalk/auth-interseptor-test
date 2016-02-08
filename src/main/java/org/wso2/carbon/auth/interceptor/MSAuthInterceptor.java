@@ -25,17 +25,21 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.mss.HttpResponder;
 import org.wso2.carbon.mss.Interceptor;
 import org.wso2.carbon.mss.ServiceMethodInfo;
-import org.wso2.carbon.security.annotation.RequirePermission;
+import org.wso2.carbon.security.CarbonSecurityManager;
+import org.wso2.carbon.security.annotation.Secure;
 import org.wso2.carbon.security.jaas.CarbonCallbackHandler;
 import org.wso2.carbon.security.jaas.CarbonPermission;
 
-import java.security.AccessControlException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
+import java.lang.reflect.Method;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 
 /**
  *
@@ -73,20 +77,14 @@ public class MSAuthInterceptor implements Interceptor {
             return false;
         }
 
-        // Authorization - File Based
+        // Authorization
 
-        RequirePermission requirePermission = serviceMethodInfo.getMethod().getAnnotation(RequirePermission.class);
+        if (serviceMethodInfo.getMethod().isAnnotationPresent(Secure.class)) {
 
-        if (requirePermission != null) {
-            CarbonPermission carbonPermission = new CarbonPermission(requirePermission.permission(),
-                                                                     getActionsString(requirePermission.actions()));
-            if (!this.isAuthorized(loginContext.getSubject(), carbonPermission)) {
+            if (!this.isAuthorized(loginContext.getSubject(), buildCarbonPermission(serviceMethodInfo))) {
                 sendUnauthorized(httpResponder);
+                return false;
             }
-        } else {
-            //TODO
-            sendUnauthorized(httpResponder);
-            return false;
         }
 
         return true;
@@ -98,26 +96,9 @@ public class MSAuthInterceptor implements Interceptor {
 
     }
 
-    private boolean isAuthorized(Subject subject, final CarbonPermission permission) {
+    private boolean isAuthorized(Subject subject, final CarbonPermission requiredPermission) {
 
-        final SecurityManager securityManager;
-        if (System.getSecurityManager() == null) {
-            securityManager = new SecurityManager();
-        } else {
-            securityManager = System.getSecurityManager();
-        }
-
-        try {
-            Subject.doAsPrivileged(subject, (PrivilegedExceptionAction) () -> {
-                securityManager.checkPermission(permission);
-                return null;
-            }, null);
-            return true;
-        } catch (AccessControlException ace) {
-            return false;
-        } catch (PrivilegedActionException pae) {
-            return false;
-        }
+        return CarbonSecurityManager.checkPermission(subject, requiredPermission);
     }
 
     private void sendUnauthorized(HttpResponder httpResponder) {
@@ -128,18 +109,27 @@ public class MSAuthInterceptor implements Interceptor {
         httpResponder.sendStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR, ArrayListMultimap.create());
     }
 
-    private String getActionsString(String[] actions) {
+    private CarbonPermission buildCarbonPermission(ServiceMethodInfo serviceMethodInfo) {
 
-        if (actions.length > 0) {
-            StringBuilder actionsStr = new StringBuilder();
-            for (String action : actions) {
-                actionsStr.append(action).append("',");
-            }
-            actionsStr.deleteCharAt(actionsStr.length() - 1);
-            return actionsStr.toString();
-        } else {
-            throw new IllegalArgumentException("Actions cannot be empty");
+        StringBuilder permissionBuilder = new StringBuilder();
+        permissionBuilder.append(serviceMethodInfo.getMethodName()).append(".")
+                .append(serviceMethodInfo.getMethod().getName());
+
+        return new CarbonPermission(permissionBuilder.toString(), getAction(serviceMethodInfo.getMethod()));
+    }
+
+    private String getAction(Method method) {
+
+        if (method.isAnnotationPresent(GET.class)) {
+            return HttpMethod.GET;
+        } else if (method.isAnnotationPresent(POST.class)) {
+            return HttpMethod.POST;
+        } else if (method.isAnnotationPresent(PUT.class)) {
+            return HttpMethod.PUT;
+        } else if (method.isAnnotationPresent(DELETE.class)) {
+            return HttpMethod.DELETE;
         }
+        return null;
     }
 
 }
