@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.mss.HttpResponder;
 import org.wso2.carbon.mss.Interceptor;
 import org.wso2.carbon.mss.ServiceMethodInfo;
-import org.wso2.carbon.security.CarbonSecurityManager;
 import org.wso2.carbon.security.annotation.Secure;
 import org.wso2.carbon.security.jaas.CarbonCallbackHandler;
 import org.wso2.carbon.security.jaas.CarbonPermission;
