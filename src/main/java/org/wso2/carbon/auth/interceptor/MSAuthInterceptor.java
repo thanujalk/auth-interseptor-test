@@ -70,7 +70,6 @@ public class MSAuthInterceptor implements Interceptor {
 
         try {
             loginContext.login();
-            //TODO set LoginContext to CarbonContext
 
         } catch (LoginException e) {
             sendUnauthorized(httpResponder);
