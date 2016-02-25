@@ -81,7 +81,6 @@
             org.wso2.carbon.security.jaas.*,
             org.wso2.carbon.security.jaas.modules.*,
             org.wso2.carbon.security.exception.*,
-            org.wso2.carbon.security.*
         </import.package>
         <export.package>!org.wso2.carbon.auth.internal, org.wso2.carbon.auth.*</export.package>
         <dynamic.import.package>*</dynamic.import.package>
