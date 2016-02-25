@@ -25,12 +25,14 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.mss.HttpResponder;
 import org.wso2.carbon.mss.Interceptor;
 import org.wso2.carbon.mss.ServiceMethodInfo;
-import org.wso2.carbon.security.CarbonSecurityManager;
 import org.wso2.carbon.security.annotation.Secure;
 import org.wso2.carbon.security.jaas.CarbonCallbackHandler;
-import org.wso2.carbon.security.jaas.CarbonPermission;
+import org.wso2.carbon.security.permission.CarbonPermission;
 
 import java.lang.reflect.Method;
+import java.security.AccessControlException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
@@ -98,7 +100,25 @@ public class MSAuthInterceptor implements Interceptor {
 
     private boolean isAuthorized(Subject subject, final CarbonPermission requiredPermission) {
 
-        return CarbonSecurityManager.checkPermission(subject, requiredPermission);
+        final SecurityManager securityManager;
+
+        if (System.getSecurityManager() == null) {
+            securityManager = new SecurityManager();
+        } else {
+            securityManager = System.getSecurityManager();
+        }
+
+        try {
+            Subject.doAsPrivileged(subject, (PrivilegedExceptionAction) () -> {
+                securityManager.checkPermission(requiredPermission);
+                return null;
+            }, null);
+            return true;
+        } catch (AccessControlException ace) {
+            return false;
+        } catch (PrivilegedActionException pae) {
+            return false;
+        }
     }
 
     private void sendUnauthorized(HttpResponder httpResponder) {
