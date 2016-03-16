@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.auth.internal;
+package org.wso2.carbon.mss.interceptor.auth.internal;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -25,7 +25,7 @@ import org.osgi.service.component.annotations.Deactivate;
  * OSGi service component
  */
 @Component(
-        name = "org.wso2.carbon.auth.internal.AuthInterceptorComponent",
+        name = "org.wso2.carbon.mss.interceptor.auth.internal.AuthInterceptorComponent",
         immediate = true
 )
 public class AuthInterceptorComponent {

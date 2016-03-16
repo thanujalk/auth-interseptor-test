@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.auth.interceptor;
+package org.wso2.carbon.mss.interceptor.auth;
 
 import com.google.common.collect.ArrayListMultimap;
 import io.netty.handler.codec.http.HttpRequest;
@@ -22,12 +22,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.mss.HttpResponder;
-import org.wso2.carbon.mss.Interceptor;
-import org.wso2.carbon.mss.ServiceMethodInfo;
-import org.wso2.carbon.security.annotation.Secure;
+import org.wso2.carbon.mss.interceptor.auth.annotation.Secure;
 import org.wso2.carbon.security.jaas.CarbonCallbackHandler;
 import org.wso2.carbon.security.jaas.CarbonPermission;
+import org.wso2.msf4j.HttpResponder;
+import org.wso2.msf4j.Interceptor;
+import org.wso2.msf4j.ServiceMethodInfo;
 
 import java.lang.reflect.Method;
 import java.security.AccessControlException;
@@ -59,6 +59,8 @@ public class MSAuthInterceptor implements Interceptor {
     public boolean preCall(HttpRequest httpRequest, HttpResponder httpResponder, ServiceMethodInfo serviceMethodInfo) {
 
         CallbackHandler callbackHandler = new CarbonCallbackHandler(httpRequest);
+
+        //log.info(UsernamePasswordLoginModule.class.getName());
 
         LoginContext loginContext;
         try {
