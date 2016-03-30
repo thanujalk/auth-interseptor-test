@@ -77,14 +77,12 @@
             javax.security.auth.callback.*,
             org.wso2.msf4j.*,
             org.osgi.service.*,
-            org.wso2.carbon.security.annotation.*,
             org.wso2.carbon.security.jaas.*
         </import.package>
         <export.package>
             !org.wso2.carbon.mss.interceptor.auth.internal,
             org.wso2.carbon.mss.interceptor.auth.*
         </export.package>
-        <dynamic.import.package>*</dynamic.import.package>
         <dsannotations>*</dsannotations>
         <equinox.osgi.version>3.10.2.v20150203-1939</equinox.osgi.version>
         <carbon.mss.version>1.0.0-SNAPSHOT</carbon.mss.version>
